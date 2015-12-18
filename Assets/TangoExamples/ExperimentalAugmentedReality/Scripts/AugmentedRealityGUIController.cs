@@ -109,6 +109,9 @@ public class AugmentedRealityGUIController : MonoBehaviour
     /// If set, show debug text.
     /// </summary>
     private bool m_showDebug = false;
+
+    public GameObject portal;
+    private bool portalMade = false;
     
     /// <summary>
     /// Unity Start() callback, we set up some initial values here.
@@ -149,6 +152,7 @@ public class AugmentedRealityGUIController : MonoBehaviour
     /// </summary>
     public void OnGUI()
     {
+        // Debug GUI
         if (m_showDebug && m_tangoApplication.HasRequestedPermissions())
         {
             Color oldColor = GUI.color;
@@ -194,7 +198,7 @@ public class AugmentedRealityGUIController : MonoBehaviour
                       UI_FONT_SIZE + statusString + "</size>");
             GUI.color = oldColor;
         }
-
+        /*
         if (m_selectedMarker != null)
         {
             Renderer selectedRenderer = m_selectedMarker.GetComponent<Renderer>();
@@ -213,134 +217,10 @@ public class AugmentedRealityGUIController : MonoBehaviour
         {
             m_selectedRect = new Rect();
         }
+         * */
     }
 
-    /// <summary>
-    /// Convert a 3D bounding box into a 2D Rect.
-    /// </summary>
-    /// <returns>The 2D Rect in Screen coordinates.</returns>
-    /// <param name="cam">Camera to use.</param>
-    /// <param name="bounds">3D bounding box.</param>
-    private Rect WorldBoundsToScreen(Camera cam, Bounds bounds)
-    {
-        Vector3 center = bounds.center;
-        Vector3 extents = bounds.extents;
-        Bounds screenBounds = new Bounds(cam.WorldToScreenPoint(center), Vector3.zero);
-        
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, +extents.y, +extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, +extents.y, -extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, -extents.y, +extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, -extents.y, -extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, +extents.y, +extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, +extents.y, -extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, -extents.y, +extents.z)));
-        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, -extents.y, -extents.z)));
-        return Rect.MinMaxRect(screenBounds.min.x, screenBounds.min.y, screenBounds.max.x, screenBounds.max.y);
-    }
-
-    /// <summary>
-    /// Construct readable string from TangoPoseStatusType.
-    /// </summary>
-    /// <param name="status">Pose status from Tango.</param>
-    /// <returns>Readable string corresponding to status.</returns>
-    private string _GetLoggingStringFromPoseStatus(TangoEnums.TangoPoseStatusType status)
-    {
-        string statusString;
-        switch (status)
-        {
-        case TangoEnums.TangoPoseStatusType.TANGO_POSE_INITIALIZING:
-            statusString = "initializing";
-            break;
-        case TangoEnums.TangoPoseStatusType.TANGO_POSE_INVALID:
-            statusString = "invalid";
-            break;
-        case TangoEnums.TangoPoseStatusType.TANGO_POSE_UNKNOWN:
-            statusString = "unknown";
-            break;
-        case TangoEnums.TangoPoseStatusType.TANGO_POSE_VALID:
-            statusString = "valid";
-            break;
-        default:
-            statusString = "N/A";
-            break;
-        }
-        return statusString;
-    }
     
-    /// <summary>
-    /// Reformat string from vector3 type for data logging.
-    /// </summary>
-    /// <param name="vec">Position to display.</param>
-    /// <returns>Readable string corresponding to vec.</returns>
-    private string _GetLoggingStringFromVec3(Vector3 vec)
-    {
-        if (vec == Vector3.zero)
-        {
-            return "N/A";
-        }
-        else
-        {
-            return string.Format("{0}, {1}, {2}", 
-                                 vec.x.ToString(UI_FLOAT_FORMAT),
-                                 vec.y.ToString(UI_FLOAT_FORMAT),
-                                 vec.z.ToString(UI_FLOAT_FORMAT));
-        }
-    }
-    
-    /// <summary>
-    /// Reformat string from quaternion type for data logging.
-    /// </summary>
-    /// <param name="quat">Quaternion to display.</param>
-    /// <returns>Readable string corresponding to quat.</returns>
-    private string _GetLoggingStringFromQuaternion(Quaternion quat)
-    {
-        if (quat == Quaternion.identity)
-        {
-            return "N/A";
-        }
-        else
-        {
-            return string.Format("{0}, {1}, {2}, {3}",
-                                 quat.x.ToString(UI_FLOAT_FORMAT),
-                                 quat.y.ToString(UI_FLOAT_FORMAT),
-                                 quat.z.ToString(UI_FLOAT_FORMAT),
-                                 quat.w.ToString(UI_FLOAT_FORMAT));
-        }
-    }
-    
-    /// <summary>
-    /// Return a string to the get logging from frame count.
-    /// </summary>
-    /// <returns>The get logging string from frame count.</returns>
-    /// <param name="frameCount">Frame count.</param>
-    private string _GetLoggingStringFromFrameCount(int frameCount)
-    {
-        if (frameCount == -1.0)
-        {
-            return "N/A";
-        }
-        else
-        {
-            return frameCount.ToString();
-        }
-    }
-    
-    /// <summary>
-    /// Return a string to get logging of FrameDeltaTime.
-    /// </summary>
-    /// <returns>The get loggin string from frame delta time.</returns>
-    /// <param name="frameDeltaTime">Frame delta time.</param>
-    private string _GetLogginStringFromFrameDeltaTime(float frameDeltaTime)
-    {
-        if (frameDeltaTime == -1.0)
-        {
-            return "N/A";
-        }
-        else
-        {
-            return (frameDeltaTime * SECOND_TO_MILLISECOND).ToString(UI_FLOAT_FORMAT);
-        }
-    }
 
     /// <summary>
     /// Update location marker state.
@@ -350,7 +230,7 @@ public class AugmentedRealityGUIController : MonoBehaviour
         if (Input.touchCount == 1)
         {
             // Single tap -- place new location or select existing location.
-            Touch t = Input.GetTouch(0);
+            Touch t = Input.GetTouch(0); // first finger
             Vector2 guiPosition = new Vector2(t.position.x, Screen.height - t.position.y);
             Camera cam = m_arScreen.m_renderCamera;
             RaycastHit hitInfo;
@@ -364,6 +244,7 @@ public class AugmentedRealityGUIController : MonoBehaviour
             {
                 // do nothing, the button will handle it
             }
+
             else if (Physics.Raycast(cam.ScreenPointToRay(t.position), out hitInfo))
             {
                 // Found a marker, select it (so long as it isn't disappearing)!
@@ -399,11 +280,12 @@ public class AugmentedRealityGUIController : MonoBehaviour
                     // floating point error in it.
                     forward = Vector3.Cross(up, cam.transform.right);
                 }
-                if (GameObject.FindObjectsOfType<ARLocationMarker>().Length == 0)
+                if (!portalMade)
                 {
-                    Instantiate(m_prefabLocation, planeCenter, Quaternion.LookRotation(forward, up));
+                    portalMade = true;
+                    portal.transform.position = planeCenter;
+                    portal.SetActive(true);
                 }
-                
                 m_selectedMarker = null;
             }
         }
@@ -425,6 +307,134 @@ public class AugmentedRealityGUIController : MonoBehaviour
         if (Input.touchCount != 1)
         {
             return;
+        }
+    }
+
+
+    /// <summary>
+    /// Convert a 3D bounding box into a 2D Rect.
+    /// </summary>
+    /// <returns>The 2D Rect in Screen coordinates.</returns>
+    /// <param name="cam">Camera to use.</param>
+    /// <param name="bounds">3D bounding box.</param>
+    private Rect WorldBoundsToScreen(Camera cam, Bounds bounds)
+    {
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+        Bounds screenBounds = new Bounds(cam.WorldToScreenPoint(center), Vector3.zero);
+
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, +extents.y, +extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, +extents.y, -extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, -extents.y, +extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(+extents.x, -extents.y, -extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, +extents.y, +extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, +extents.y, -extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, -extents.y, +extents.z)));
+        screenBounds.Encapsulate(cam.WorldToScreenPoint(center + new Vector3(-extents.x, -extents.y, -extents.z)));
+        return Rect.MinMaxRect(screenBounds.min.x, screenBounds.min.y, screenBounds.max.x, screenBounds.max.y);
+    }
+
+    /// <summary>
+    /// Construct readable string from TangoPoseStatusType.
+    /// </summary>
+    /// <param name="status">Pose status from Tango.</param>
+    /// <returns>Readable string corresponding to status.</returns>
+    private string _GetLoggingStringFromPoseStatus(TangoEnums.TangoPoseStatusType status)
+    {
+        string statusString;
+        switch (status)
+        {
+            case TangoEnums.TangoPoseStatusType.TANGO_POSE_INITIALIZING:
+                statusString = "initializing";
+                break;
+            case TangoEnums.TangoPoseStatusType.TANGO_POSE_INVALID:
+                statusString = "invalid";
+                break;
+            case TangoEnums.TangoPoseStatusType.TANGO_POSE_UNKNOWN:
+                statusString = "unknown";
+                break;
+            case TangoEnums.TangoPoseStatusType.TANGO_POSE_VALID:
+                statusString = "valid";
+                break;
+            default:
+                statusString = "N/A";
+                break;
+        }
+        return statusString;
+    }
+
+    /// <summary>
+    /// Reformat string from vector3 type for data logging.
+    /// </summary>
+    /// <param name="vec">Position to display.</param>
+    /// <returns>Readable string corresponding to vec.</returns>
+    private string _GetLoggingStringFromVec3(Vector3 vec)
+    {
+        if (vec == Vector3.zero)
+        {
+            return "N/A";
+        }
+        else
+        {
+            return string.Format("{0}, {1}, {2}",
+                                 vec.x.ToString(UI_FLOAT_FORMAT),
+                                 vec.y.ToString(UI_FLOAT_FORMAT),
+                                 vec.z.ToString(UI_FLOAT_FORMAT));
+        }
+    }
+
+    /// <summary>
+    /// Reformat string from quaternion type for data logging.
+    /// </summary>
+    /// <param name="quat">Quaternion to display.</param>
+    /// <returns>Readable string corresponding to quat.</returns>
+    private string _GetLoggingStringFromQuaternion(Quaternion quat)
+    {
+        if (quat == Quaternion.identity)
+        {
+            return "N/A";
+        }
+        else
+        {
+            return string.Format("{0}, {1}, {2}, {3}",
+                                 quat.x.ToString(UI_FLOAT_FORMAT),
+                                 quat.y.ToString(UI_FLOAT_FORMAT),
+                                 quat.z.ToString(UI_FLOAT_FORMAT),
+                                 quat.w.ToString(UI_FLOAT_FORMAT));
+        }
+    }
+
+    /// <summary>
+    /// Return a string to the get logging from frame count.
+    /// </summary>
+    /// <returns>The get logging string from frame count.</returns>
+    /// <param name="frameCount">Frame count.</param>
+    private string _GetLoggingStringFromFrameCount(int frameCount)
+    {
+        if (frameCount == -1.0)
+        {
+            return "N/A";
+        }
+        else
+        {
+            return frameCount.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Return a string to get logging of FrameDeltaTime.
+    /// </summary>
+    /// <returns>The get loggin string from frame delta time.</returns>
+    /// <param name="frameDeltaTime">Frame delta time.</param>
+    private string _GetLogginStringFromFrameDeltaTime(float frameDeltaTime)
+    {
+        if (frameDeltaTime == -1.0)
+        {
+            return "N/A";
+        }
+        else
+        {
+            return (frameDeltaTime * SECOND_TO_MILLISECOND).ToString(UI_FLOAT_FORMAT);
         }
     }
 }

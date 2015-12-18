@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class GhostAI : MonoBehaviour {
-    float turnSpeed = .6f;
+    float turnSpeed = .4f;
     float moveSpeed = .01f;
 	// Use this for initialization
 	void Start () {
