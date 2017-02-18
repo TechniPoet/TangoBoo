@@ -1,4 +1,6 @@
 ﻿//-----------------------------------------------------------------------
+// Altered for educational use by Jeff Robbins and Greg Price.
+//
 // <copyright file="AugmentedRealityGUIController.cs" company="Google">
 //
 // Copyright 2015 Google Inc. All Rights Reserved.
@@ -21,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Tango;
+using UnityEngine.UI;
 
 /// <summary>
 /// GUI controller controls all the debug overlay to show the data for poses.
@@ -112,6 +115,8 @@ public class AugmentedRealityGUIController : MonoBehaviour
 
     public GameObject portal;
     private bool portalMade = false;
+    public Text Instructs;
+
     
     /// <summary>
     /// Unity Start() callback, we set up some initial values here.
@@ -198,26 +203,6 @@ public class AugmentedRealityGUIController : MonoBehaviour
                       UI_FONT_SIZE + statusString + "</size>");
             GUI.color = oldColor;
         }
-        /*
-        if (m_selectedMarker != null)
-        {
-            Renderer selectedRenderer = m_selectedMarker.GetComponent<Renderer>();
-
-            // GUI's Y is flipped from the mouse's Y
-            Rect screenRect = WorldBoundsToScreen(Camera.main, selectedRenderer.bounds);
-            float yMin = Screen.height - screenRect.yMin;
-            float yMax = Screen.height - screenRect.yMax;
-            screenRect.yMin = Mathf.Min(yMin, yMax);
-            screenRect.yMax = Mathf.Max(yMin, yMax);
-
-            m_selectedRect = screenRect;
-            
-        }
-        else
-        {
-            m_selectedRect = new Rect();
-        }
-         * */
     }
 
     
@@ -282,6 +267,7 @@ public class AugmentedRealityGUIController : MonoBehaviour
                 }
                 if (!portalMade)
                 {
+                    Instructs.gameObject.SetActive(false);
                     portalMade = true;
                     portal.transform.position = planeCenter;
                     portal.SetActive(true);

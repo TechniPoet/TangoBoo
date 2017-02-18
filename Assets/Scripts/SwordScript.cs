@@ -52,13 +52,20 @@ public class SwordScript : MonoBehaviour {
         yield return null;
     }
 
-    void OnTriggerEnter(Collider col)
+    void OnTriggerStay(Collider col)
     {
         Debug.Log("Sword hit!");
         if (col.gameObject.tag == "Enemy")
         {
-            score += 5;
-            Destroy(col.gameObject);
+            GhostAI g = col.gameObject.GetComponent<GhostAI>();
+            if (g.health > 0)
+            {
+                g.health -= 15f;
+                if (g.health <= 0) {
+
+                    score += 5;
+                }
+            }
         }
     }
 
